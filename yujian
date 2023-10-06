@@ -1,0 +1,232 @@
+公共类Cipher1实现Serializable{
+
+private static final long serialVersionUID = -2775169219917630084L;
+私有字符串明文//明文
+私有字符串密文//密文
+私有字符串密钥//秘钥
+ //Use a set to load characters after encryption and decryption
+static ArrayList<Character> list = new ArrayList<>();
+
+公共密码1（）{
+plaintext = "202210139202";//初始值是自己的学号
+ciphertext = "tanjianci";
+key = "123456";
+ }
+
+公共字符串getPlaintext（）{
+返回明文；
+ }
+
+ public void setPlaintext（字符串明文）{
+this.plaintext = plaintext;
+ }
+
+ 公共字符串getCiphertext（）{
+返回密文；
+ }
+
+ public void setCiphertext（字符串密文）{
+this.ciphertext = ciphertext;
+ }
+
+公共字符串getKey（）{
+返回键；
+ }
+
+ public void setKey（）{
+ /*
+ The setKey method requires the user to enter the key and check whether the length of the key meets the requirements,
+ Non conformance requires re entry until conformance
+ */
+ //6-12 characters as key
+Scanner sc = new Scanner(System.in);
+ System.out.println (&#34;Please enter a new password&#34;);
+字符串键；
+while（真）{
+key = sc.next();
+ //Judge whether the length of the password entered by the keyboard meets the requirements
+if（键匹配（“[0-9]{6,12}”）{
+this.key=key;
+                break;
+            }else {
+                System.out.println("输入的密码不符合要求,请重新输入");
+            }
+        }
+    }
+
+    //加密方法
+    public void encryption() {
+        //通过key对输入的明文plaintext加密,并显示加密前后的结果。
+        //1.将明文变成字符数组
+        char[] plaintextArr = plaintext.toCharArray();
+        //2.设置指定属性
+        int number;//表示明文的每一个数字
+        int index;
+        int number1;//密钥的每一个数字
+        int number2;//表示i是key长度的多少倍
+        int number4;//加密后的每一个数字
+        //3.循环判断明文的可见度
+        for (int i = 0; i < plaintextArr.length; i++) {
+            //明文在ASCII表中可见范围对应的数字为32-126
+            if (plaintextArr[i] >= 32 && plaintextArr[i] <= 126) {
+                //表示在可见范围中，需要进行加密操作
+                //4.得到明文的每一个字符转化成数字
+                number = plaintextArr[i];//将字符数字转换成ASCII码表上对应的数字
+                //5.得到密钥指定位置的数字
+                number2 = i / key.length();//先求出i现在是key长度的多少倍
+                index = i - key.length() * number2;//然后得到i-长度*倍数
+                //就是当前要取的密钥的索引数字
+                number1 = Integer.parseInt(key.charAt(index) + "");
+                //6.将其加密
+                number4 = number + number1;//得到的是明文每一个字符在ASCII码表上
+                //对应的数字加上密钥指定的数字(不是密钥在ASCII上对应的数字)
+                //相加之后大于126，就模
+                if (number4 > 126) {
+                    number4 = number4 % 126 + 31;
+                    //然后将其赋值给密文
+                    char n = (char) number4;
+                    list.add(n);
+                } else {
+                    //不大于就不
+                    //将其赋值给密文
+                    list.add((char) number4);
+                }
+            } else {
+                //表示不在可见范围中，就不用进行加密操作
+                list.add(plaintextArr[i]);
+            }
+        }
+        StringBuilder sb = new StringBuilder();
+        for (Character c : list) {
+            sb.append(c);
+        }
+        setCiphertext(sb.toString());
+        list.clear();
+    }
+
+    //解密方法
+    public void decryption() {
+        //通过key对输入的密文ciphertext解密,并显示解密前后的结果。
+        int len1;//当前i比密文的倍数
+        int c1;//表示密钥对应的数字
+        int index;//表示密文应减去当前密钥哪个位置上的数字
+        int number;//密文每一个字符在ASCII上对应的数字加密钥之后得到的数字
+        for (int i = 0; i < ciphertext.length(); i++) {
+            char ch = ciphertext.charAt(i);//密文对应的每一个字符
+
+            if (ch >= 32 && ch <= 126) {
+                len1 = i / key.length();
+                index = i - key.length() * len1;
+                //然后得到密钥的字符串转换成的数字
+                c1 = Integer.parseInt(key.charAt(index) + "");
+                number = ch - c1;
+                if (number<32){
+                    //若小于32
+                    //则将其数值减去31再加126
+                    list.add((char)(number-31+126));
+                }else {
+                    //若不小于，则不做处理
+                    list.add((char) (ch - c1));
+                }
+            } else {
+                list.add(ch);
+            }
+        }
+        //循环结束后
+        StringBuilder sb = new StringBuilder();
+        for (Character ch1 : list) {
+            sb.append(ch1);
+        }
+        setPlaintext(sb.toString());
+        list.clear();
+    }
+
+
+    //对文件进行加密
+    public void encryption1() throws IOException {
+        String tempPlaintxt = getPlaintext();//临时明文保存处
+        String tempCiphertext = getCiphertext();//临时密文保存处
+        Scanner sc = new Scanner(System.in);
+
+        String path;//加密文件路径
+        String path1;//加密后保存的文件路径
+        while (true) {
+            System.out.println("请输入您要加密的文件路径,可以是相对路径,也可以是绝对路径");
+            path = sc.next();
+            File f = new File(path);
+            System.out.println("请输入您加密后要保存到的文件，可以是相对路径,也可以是绝对路径");
+            path1 = sc.next();
+            File f1 = new File(path1);
+            if (f.isFile() && f1.isFile()) {
+                break;
+            } else {
+                System.out.println("您输入的加密文件路径或解密文件路径有误，请重新输入");
+            }
+        }
+        //要加密的文件
+        BufferedReader br = new BufferedReader(new FileReader(path));
+        //加密之后存放的地方
+        BufferedWriter bw = new BufferedWriter(new FileWriter(path1));
+        String str;
+        while ((str = br.readLine()) != null) {
+            //先将读取到的字符串改成现在的明文
+            setPlaintext(str);
+            //然后调用明文的加密方法，将字符串加密
+            encryption();
+            //然后将加密后的密文写入要保存的文件中
+            bw.write(getCiphertext());
+            //读完一行，写完一行，换行
+            bw.newLine();
+        }
+        bw.close();
+        br.close();
+        //结束后将明文和密文重新改回之前的
+        setPlaintext(tempPlaintxt);
+        setCiphertext(tempCiphertext);
+    }
+
+
+    //对加密文件进行解密
+    public void decryption1() throws IOException {
+        String tempCiphertext = getCiphertext();//临时密文保存处
+        String tempPlaintxt = getPlaintext();//临时明文保存处
+        Scanner sc = new Scanner(System.in);
+        String path;//需要解密的文件路径
+        String path1;//解密后要保存到的文件路径
+        while (true) {
+            System.out.println("请输入你要解密的文件，可以是相对路径,也可以是绝对路径");
+            path = sc.next();
+            File f = new File(path);
+            System.out.println("请输入解密后需要保存到的文件的路径，可以是相对路径,也可以是绝对路径");
+            path1 = sc.next();
+            File f1 = new File(path1);
+            if (f.isFile() && f1.isFile()) {
+                break;
+            } else {
+                System.out.println("需要解密的文件路径或解密后要保存到的文件路径有误，请重新输入");
+            }
+
+        }
+        //要解密的文件
+        BufferedReader br = new BufferedReader(new FileReader("src\\cipher.txt"));
+        //解密后存放的地方
+        BufferedWriter bw = new BufferedWriter(new FileWriter("src\\b.txt"));
+        String str;
+        while ((str = br.readLine()) != null) {
+            //先将读取到的字符串改成现在的密文
+            setCiphertext(str);
+            //然后调用解密方法
+            decryption();
+            //然后将解密后得到的明文写入要保存的文档
+            bw.write(getPlaintext());
+            //读完一行，写完一行，换行
+            bw.newLine();
+        }
+        bw.close();
+        br.close();
+        //结束后将明文和密文重新改回之前的
+        setCiphertext(tempCiphertext);
+        setPlaintext(tempPlaintxt);
+
+    }
+}
